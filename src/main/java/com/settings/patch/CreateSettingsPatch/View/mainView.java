@@ -27,13 +27,12 @@ public class mainView extends VerticalLayout {
     //Структуры
     private static List<YPMPF> list = new ArrayList<>();
     // View классы
+    GridViewYpm gridViewYpm = new GridViewYpm();
     // Кнопки
     private final Button createPatch;
     private final CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 
     public mainView() {
-
-        list.add(new YPMPF("PDA9A", "TEST", "&RES<>''"));
         //-------Создание Input полей для заполнения информации о патче----------
         TextField mnemonic = new TextField();
         mnemonic.setLabel("Мнемоника патча");
@@ -71,17 +70,17 @@ public class mainView extends VerticalLayout {
         //--------------------------------------------------------------------------
 
         //----------------- Таблицы ---------------------------------------
-        add(GridViewYpm.getGridViewYpm().getNewSettingYpm(), GridViewYpm.getGridViewYpm().getGridYpm());
+        add(gridViewYpm.getNewSettingYpm(), gridViewYpm.getGridYpm());
         //-----------------------------------------------------------------
 
         // Обработка
         checkboxGroup.addSelectionListener(e ->{
             if(!e.getValue().contains("YPMPF")){
-                GridViewYpm.getGridViewYpm().getNewSettingYpm().setVisible(false);
-                GridViewYpm.getGridViewYpm().getGridYpm().setVisible(false);
+                gridViewYpm.getNewSettingYpm().setVisible(false);
+                gridViewYpm.getGridYpm().setVisible(false);
             }else{
-                GridViewYpm.getGridViewYpm().getNewSettingYpm().setVisible(true);
-                GridViewYpm.getGridViewYpm().getGridYpm().setVisible(true);
+                gridViewYpm.getNewSettingYpm().setVisible(true);
+                gridViewYpm.getGridYpm().setVisible(true);
             }
         });
     }

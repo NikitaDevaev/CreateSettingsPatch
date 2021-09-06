@@ -16,7 +16,7 @@ import com.vaadin.flow.data.binder.Binder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class DialogViewYpm {
-    private static DialogViewYpm dialogViewYpm = new DialogViewYpm();
+
     private YPMPF ypmpf;
     private Dialog dialog;
     // Заголовок
@@ -36,7 +36,7 @@ public class DialogViewYpm {
     private Binder<YPMPF> binder = new Binder<>(YPMPF.class);
 
     @Autowired
-    private DialogViewYpm() {
+    public DialogViewYpm() {
         // Создание экземпляра объекта диалогового окна
         this.dialog = new Dialog();
         // Стили
@@ -65,6 +65,7 @@ public class DialogViewYpm {
         // Анализ действий
         closeButton.addClickListener(e -> dialog.close());
         saveButton.addClickListener(e -> save());
+        deleteButton.addClickListener(e ->delete());
     }
 
     public Dialog getDialog() {
@@ -77,12 +78,18 @@ public class DialogViewYpm {
     }
 
     public void save(){
-        mainView.getList().add(new YPMPF("test", "test", "test"));
-        GridViewYpm.getGridViewYpm().getGridYpm().setItems(mainView.getList());
+        final int it = mainView.getList().indexOf(binder.getBean());
+        if(it == -1){
+            mainView.getList().add(binder.getBean());
+        }else{
+            mainView.getList().set(it, binder.getBean());
+        }
+
         dialog.close();
     }
 
-    public static DialogViewYpm getDialogViewYpm() {
-        return dialogViewYpm;
+    public void delete(){
+        mainView.getList().remove(binder.getBean());
+        dialog.close();
     }
 }

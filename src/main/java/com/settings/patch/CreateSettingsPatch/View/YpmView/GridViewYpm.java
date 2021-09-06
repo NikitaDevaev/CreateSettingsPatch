@@ -8,13 +8,12 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 // Синглтон класс
 public class GridViewYpm {
-    private static GridViewYpm gridViewYpm = new GridViewYpm();
     // View классы
-
+    DialogViewYpm dialogViewYpm = new DialogViewYpm();
     Grid<YPMPF> gridYpm = new Grid<>(YPMPF.class, false);
     Button newSettingYpm = new Button("New Settings", VaadinIcon.PLUS.create(), e->{
-        DialogViewYpm.getDialogViewYpm().getDialog().open();
-        DialogViewYpm.getDialogViewYpm().createDialogView(new YPMPF());
+        dialogViewYpm.getDialog().open();
+        dialogViewYpm.createDialogView(new YPMPF());
     });
 
     public Grid<YPMPF> getGridYpm() {
@@ -25,19 +24,16 @@ public class GridViewYpm {
         return this.newSettingYpm;
     }
 
-    private GridViewYpm(){
+    public GridViewYpm(){
         // Корректируем таблицу
         gridYpm.addColumn(YPMPF::getConditionName).setHeader("Условие").setWidth("10px");
         gridYpm.addColumn(YPMPF::getDescription).setHeader("Описание");
         gridYpm.addColumn(YPMPF::getCondition).setHeader("Выражение");
         gridYpm.setItems(mainView.getList());
         gridYpm.asSingleSelect().addValueChangeListener(e->{
-            DialogViewYpm.getDialogViewYpm().getDialog().open();
-            DialogViewYpm.getDialogViewYpm().createDialogView(e.getValue());
+            dialogViewYpm.getDialog().open();
+            dialogViewYpm.createDialogView(e.getValue());
         });
     }
 
-    public static GridViewYpm getGridViewYpm(){
-        return gridViewYpm;
-    }
 }
