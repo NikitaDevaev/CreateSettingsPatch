@@ -1,0 +1,16 @@
+as400release {
+  installPhase = 'DOK'
+  regMVL {
+    mode = 'SUSP'  // SUSP or NORM, SUSP by default
+  }
+  packages {
+    addPackages "#PACKAGE_NAME#"
+  }
+  releaseNotes {
+    addText = "#PATCH_DESCRIPTION#"
+    #FSD_LINK#
+    #TASK_LINK#
+    #BRD_LINK#
+  }
+}
+#REBUILD_LEVEL#

@@ -1,12 +1,11 @@
-package com.settings.patch.CreateSettingsPatch.View;
+package com.settings.patch.CreateSettingsPatch.view;
 
-import com.settings.patch.CreateSettingsPatch.GenerateModule.Generator;
-import com.settings.patch.CreateSettingsPatch.View.YpmView.GridViewYpm;
+import com.settings.patch.CreateSettingsPatch.generateModules.Generator;
+import com.settings.patch.CreateSettingsPatch.view.YpmView.GridViewYpm;
 import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -15,22 +14,15 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
-@Route
+@Route("")
 @Theme(variant = Lumo.DARK)
-public class mainView extends VerticalLayout {
+public class MainView extends VerticalLayout {
 
     private Generator generator;
-    //Структуры
-    private static List<YPMPF> list = new ArrayList<>();
     // View классы
     GridViewYpm gridViewYpm = new GridViewYpm();
     // Кнопки
@@ -38,7 +30,7 @@ public class mainView extends VerticalLayout {
     DownloadDialog downloadDialog;
     private final CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 
-    public mainView() {
+    public MainView() {
 
 
 
@@ -85,9 +77,9 @@ public class mainView extends VerticalLayout {
         //-----------------------------------------------------------------
         // Обработка
         createPatch.addClickListener(e -> {
-            this.generator = new Generator(task.getValue(), mnemonic.getValue(), version.getValue().toString());
+            this.generator = new Generator(fsd.getValue(), task.getValue(), brd.getValue(), desc.getValue(), mnemonic.getValue(), version.getValue().toString(), 3);
             generator.run();
-            this.downloadDialog = new DownloadDialog(generator.getNameBuildFile(), generator.getPatchForBuildFile());
+            this.downloadDialog = new DownloadDialog(generator.getNameBuildFile(), generator.getPatchForBuildFile(), generator.getNameReleaseFile(), generator.getPatchForReleaseFile());
             downloadDialog.getDialog().open();
         });
         checkboxGroup.addSelectionListener(e ->{
@@ -100,14 +92,4 @@ public class mainView extends VerticalLayout {
             }
         });
     }
-    public static List<YPMPF> getList() {
-        return list;
-    }
-
-    public static void setList(List<YPMPF> list) {
-       list = list;
-    }
-
-
-
 }
