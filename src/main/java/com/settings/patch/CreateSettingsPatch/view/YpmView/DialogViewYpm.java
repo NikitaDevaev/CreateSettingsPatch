@@ -1,6 +1,7 @@
-package com.settings.patch.CreateSettingsPatch.View.YpmView;
+package com.settings.patch.CreateSettingsPatch.view.YpmView;
 
-import com.settings.patch.CreateSettingsPatch.View.mainView;
+import com.settings.patch.CreateSettingsPatch.data.Data;
+import com.settings.patch.CreateSettingsPatch.view.MainView;
 import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DialogViewYpm {
 
     private YPMPF ypmpf;
+    private GridViewYpm gridViewYpm;
     private Dialog dialog;
     // Заголовок
     private H2 headline = new H2("Добавление новой настроки");
@@ -36,7 +38,8 @@ public class DialogViewYpm {
     private Binder<YPMPF> binder = new Binder<>(YPMPF.class);
 
     @Autowired
-    public DialogViewYpm() {
+    public DialogViewYpm(GridViewYpm gridViewYpm) {
+        this.gridViewYpm = gridViewYpm;
         // Создание экземпляра объекта диалогового окна
         this.dialog = new Dialog();
         // Стили
@@ -78,18 +81,18 @@ public class DialogViewYpm {
     }
 
     public void save(){
-        final int it = mainView.getList().indexOf(binder.getBean());
+        final int it = Data.getList().indexOf(binder.getBean());
         if(it == -1){
-            mainView.getList().add(binder.getBean());
+            Data.getList().add(binder.getBean());
         }else{
-            mainView.getList().set(it, binder.getBean());
+            Data.getList().set(it, binder.getBean());
         }
-
         dialog.close();
+
     }
 
     public void delete(){
-        mainView.getList().remove(binder.getBean());
+        Data.getList().remove(binder.getBean());
         dialog.close();
     }
 }
