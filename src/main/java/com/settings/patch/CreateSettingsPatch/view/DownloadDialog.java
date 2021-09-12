@@ -1,5 +1,6 @@
 package com.settings.patch.CreateSettingsPatch.view;
 
+import com.settings.patch.CreateSettingsPatch.generateModules.Generator;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Anchor;
@@ -9,6 +10,9 @@ import com.vaadin.flow.server.StreamResource;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 public class DownloadDialog {
 
     @Getter
@@ -17,17 +21,27 @@ public class DownloadDialog {
     private Anchor anchorBuildFile;
     @Getter
     private Anchor anchorReleaseFile;
+    @Getter
+    private Anchor anchorDownloadAll;
 
-    private Button downloadAll;
+    private Button buttonDownloadAll;
     private Button close;
 
-    public DownloadDialog(String nameBuildFile, String pathBuildFile, String nameReleaseFile, String pathReleaseFile){
+    public DownloadDialog(Generator generator){
         this.dialog = new Dialog();
-        this.anchorBuildFile = new Anchor(getStreamResource(nameBuildFile,pathBuildFile),nameBuildFile);
-        this.anchorReleaseFile = new Anchor(getStreamResource(nameReleaseFile,pathReleaseFile),nameReleaseFile);
-        this.close = new Button("Close", e -> {dialog.close();});
-        this.downloadAll = new Button("Download All");
-        HorizontalLayout hl = new HorizontalLayout(this.downloadAll, this.close);
+        this.anchorBuildFile = new Anchor(getStreamResource(generator.getNameBuildFile(),generator.getPatchForBuildFile()),generator.getNameBuildFile());
+        this.anchorReleaseFile = new Anchor(getStreamResource(generator.getNameReleaseFile(),generator.getPatchForReleaseFile()),generator.getNameReleaseFile());
+
+        // Странное решение...По хорошему переделать бы
+        this.anchorDownloadAll = new Anchor(getStreamResource(generator.getNameZipFile(), generator.getPatchForZipFile()),"");
+        this.buttonDownloadAll = new Button("Download All");
+        anchorDownloadAll.add(buttonDownloadAll);
+
+        this.close = new Button("Close", e -> {
+            dialog.close();
+        });
+        HorizontalLayout hl = new HorizontalLayout(this.anchorDownloadAll ,this.close);
+
         VerticalLayout verticalLayout = new VerticalLayout(anchorBuildFile, anchorReleaseFile, hl);
         dialog.add(verticalLayout);
     }

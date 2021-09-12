@@ -31,9 +31,6 @@ public class MainView extends VerticalLayout {
     private final CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 
     public MainView() {
-
-
-
         //-------Создание Input полей для заполнения информации о патче----------
         TextField mnemonic = new TextField();
         mnemonic.setLabel("Мнемоника патча");
@@ -66,9 +63,7 @@ public class MainView extends VerticalLayout {
         checkboxGroup.setLabel("Добавление настроек");
         checkboxGroup.setItems("YPMPF", "YEFPF");
         checkboxGroup.select("YPMPF");
-        //Anchor anchor = new Anchor(streamResource, "download");
 
-        //add(anchor);
         this.createPatch = new Button("Сгенерировать патч", VaadinIcon.DOWNLOAD.create());
         add(checkboxGroup, createPatch);
         //--------------------------------------------------------------------------
@@ -77,9 +72,12 @@ public class MainView extends VerticalLayout {
         //-----------------------------------------------------------------
         // Обработка
         createPatch.addClickListener(e -> {
-            this.generator = new Generator(fsd.getValue(), task.getValue(), brd.getValue(), desc.getValue(), mnemonic.getValue(), version.getValue().toString(), 3);
+            // Переделать бы конструктор на фабричный метод
+            this.generator = new Generator(fsd.getValue(), task.getValue(),
+                    brd.getValue(), desc.getValue(), mnemonic.getValue().toUpperCase(),
+                    version.getValue().toString(), 3);
             generator.run();
-            this.downloadDialog = new DownloadDialog(generator.getNameBuildFile(), generator.getPatchForBuildFile(), generator.getNameReleaseFile(), generator.getPatchForReleaseFile());
+            this.downloadDialog = new DownloadDialog(generator);
             downloadDialog.getDialog().open();
         });
         checkboxGroup.addSelectionListener(e ->{
