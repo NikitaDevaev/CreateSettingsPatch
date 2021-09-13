@@ -6,11 +6,19 @@ import com.settings.patch.CreateSettingsPatch.entities.ReleaseFile;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class Generator {
-    private Map<String, String> build = new HashMap<>();
+
+    // Константы
+    private final String defaultPatchToStaticFiles = "src/main/resources/static/";
+    private final String defaultPatchToTemplatesFiles = "src/main/resources/templates/";
+
+    @Getter
+    private final String defaultPatchToResources = "src/main/resources/";
+
     // entities
     private BuildFile buildFile;
     private ReleaseFile releaseFile;
@@ -26,6 +34,10 @@ public class Generator {
     private String patchForReleaseFile;
     @Getter
     private String nameReleaseFile;
+    @Getter
+    private String patchForZipFile;
+    @Getter
+    private String nameZipFile;
 
 
     public Generator(String fsd ,String task, String brd, String description, String mnemonic, String numberPatch, int rebuildLevel){
@@ -38,12 +50,13 @@ public class Generator {
     public void run(){
         generateBuildFile();
         generateReleaseFile();
+        createZipArchive();
     }
 
     private void generateBuildFile(){
-        String str = getTemplateDataFromFile("src/main/resources/static/TemplateBuildFile.txt");
+        String str = getTemplateDataFromFile(defaultPatchToStaticFiles + "TemplateBuildFile.txt");
         this.nameBuildFile = mnemonic + "#" + numberPatch + ".ext.gradle";
-        this.patchForBuildFile = "src/main/resources/templates/"+this.nameBuildFile;
+        this.patchForBuildFile = defaultPatchToTemplatesFiles+this.nameBuildFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#SQL_FILE_NAME#","R"+buildFile.getNumber()+"EXT");
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
@@ -51,9 +64,9 @@ public class Generator {
         generateFinalFile(this.patchForBuildFile,str,replaceData);
     }
     private void generateReleaseFile(){
-        String str = getTemplateDataFromFile("src/main/resources/static/TemplateReleaseFile.txt");
+        String str = getTemplateDataFromFile(defaultPatchToStaticFiles + "TemplateReleaseFile.txt");
         this.nameReleaseFile = mnemonic + "#" + numberPatch + ".gradle";
-        this.patchForReleaseFile = "src/main/resources/templates/"+this.nameReleaseFile;
+        this.patchForReleaseFile = defaultPatchToTemplatesFiles+this.nameReleaseFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
             put("#PATCH_DESCRIPTION#", releaseFile.getDescription());
@@ -75,6 +88,38 @@ public class Generator {
             }
         }};
         generateFinalFile(this.patchForReleaseFile,str,replaceData);
+    }
+
+    public void createZipArchive(){
+        this.nameZipFile = mnemonic + "#" +numberPatch +".zip";
+        this.patchForZipFile = defaultPatchToResources + "ACOV/" + nameZipFile;
+        List<String> patchToFilesInArchive = Arrays.asList(patchForBuildFile,patchForReleaseFile);
+        List<String> nameFilesInArchive = Arrays.asList(nameBuildFile, nameReleaseFile);
+        if(patchToFilesInArchive.size()!=nameFilesInArchive.size()){
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        try(ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(patchForZipFile)))
+        {
+            for(int i = 0; i < patchToFilesInArchive.size(); i++){
+                try(FileInputStream fis = new FileInputStream(patchToFilesInArchive.get(i))) {
+                    ZipEntry entry=new ZipEntry(nameFilesInArchive.get(i));
+                    zout.putNextEntry(entry);
+                    // считываем содержимое файла в массив byte
+                    byte[] buffer = new byte[fis.available()];
+                    fis.read(buffer);
+                    // добавляем содержимое к архиву
+                    zout.write(buffer);
+                    // закрываем текущую запись для новой записи
+                    zout.closeEntry();
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     private String getTemplateDataFromFile(String pathToTemplateFile){

@@ -5,7 +5,6 @@ import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import lombok.Getter;
 
 // Синглтон класс
 public class GridViewYpm {
