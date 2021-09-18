@@ -1,9 +1,10 @@
 package com.settings.patch.CreateSettingsPatch.view.YpmView;
 
 import com.settings.patch.CreateSettingsPatch.data.Data;
-import com.settings.patch.CreateSettingsPatch.view.MainView;
-import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
+import com.settings.patch.CreateSettingsPatch.entities.Mode;
+import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
@@ -15,6 +16,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.EnumSet;
 
 public class DialogViewYpm {
 
@@ -33,6 +36,8 @@ public class DialogViewYpm {
     private Button saveButton = new Button("Save",  VaadinIcon.CHECK.create());
     private  Button closeButton = new Button("Close");
     private  Button deleteButton = new Button("Delete", VaadinIcon.TRASH.create());
+
+    private ComboBox<Mode> mode = new ComboBox<>();
 
     // Связка полей
     private Binder<YPMPF> binder = new Binder<>(YPMPF.class);
@@ -53,9 +58,12 @@ public class DialogViewYpm {
         description.setMaxLength(35);
           // Условие
         condition.setMaxLength(250);
+
+        mode.setItems(EnumSet.allOf(Mode.class));
+
         // Группировака
         HorizontalLayout actions = new HorizontalLayout(saveButton, closeButton, deleteButton);
-        VerticalLayout dialogLayout = new VerticalLayout(headline, paragraph,conditionName,description,condition, actions);
+        VerticalLayout dialogLayout = new VerticalLayout(headline, paragraph,conditionName,description,condition,mode, actions);
         binder.bindInstanceFields(this);
 
         dialogLayout.setPadding(false);

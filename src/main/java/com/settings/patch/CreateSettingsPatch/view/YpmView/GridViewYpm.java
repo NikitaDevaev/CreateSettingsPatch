@@ -1,7 +1,7 @@
 package com.settings.patch.CreateSettingsPatch.view.YpmView;
 
 import com.settings.patch.CreateSettingsPatch.data.Data;
-import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
+import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -35,6 +35,7 @@ public class GridViewYpm {
                 .setResizable(false);
         gridYpm.addColumn(YPMPF::getCondition).setHeader("Выражение")
                 .setAutoWidth(true);
+        gridYpm.addColumn(YPMPF::getMode).setHeader("Mode");
         gridYpm.setItems(Data.getList());
         gridYpm.asSingleSelect().addValueChangeListener(e->{
             dialogViewYpm.getDialog().open();

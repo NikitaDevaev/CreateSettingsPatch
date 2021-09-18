@@ -1,21 +1,31 @@
 package com.settings.patch.CreateSettingsPatch.view;
 
+import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import com.settings.patch.CreateSettingsPatch.generateModules.Generator;
 import com.settings.patch.CreateSettingsPatch.view.YpmView.GridViewYpm;
-import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
 import com.vaadin.flow.component.accordion.Accordion;
+import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Route("")
@@ -31,6 +41,18 @@ public class MainView extends VerticalLayout {
     private final CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 
     public MainView() {
+        AppLayout appLayout = new AppLayout();
+
+
+        Tabs test = new Tabs();
+        H1 title = new H1("Патчер");
+        title.getStyle()
+                .set("font-size", "20px")
+                .set("left", "var(--lumo-space-l)")
+                .set("margin", "0")
+                .set("position", "absolute");
+        appLayout.addToNavbar(title, test);
+        add(appLayout);
         //-------Создание Input полей для заполнения информации о патче----------
         TextField mnemonic = new TextField();
         mnemonic.setLabel("Мнемоника патча");
@@ -64,6 +86,7 @@ public class MainView extends VerticalLayout {
         checkboxGroup.setItems("YPMPF", "YEFPF");
         checkboxGroup.select("YPMPF");
 
+
         this.createPatch = new Button("Сгенерировать патч", VaadinIcon.DOWNLOAD.create());
         add(checkboxGroup, createPatch);
         //--------------------------------------------------------------------------
@@ -75,7 +98,7 @@ public class MainView extends VerticalLayout {
             // Переделать бы конструктор на фабричный метод
             this.generator = new Generator(fsd.getValue(), task.getValue(),
                     brd.getValue(), desc.getValue(), mnemonic.getValue().toUpperCase(),
-                    version.getValue().toString(), 3);
+                    version.getValue().toString(), 3, checkboxGroup.getSelectedItems());
             generator.run();
             this.downloadDialog = new DownloadDialog(generator);
             downloadDialog.getDialog().open();

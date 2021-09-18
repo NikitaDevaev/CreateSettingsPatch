@@ -1,0 +1,194 @@
+-- Description -
+
+
+-- Поставки конфигурации посредством External Input
+
+---- Данный скрипт предствляет собой пример-шаблон поставки данных
+---- (например, конфигурации приложения) посредством внешнего ввода в процессе
+---- развертывания поставки.
+
+---- Это паттерн уровня кода. Места для инжектирования вашей прикладной логики обозначены как
+---- '-->'
+---- На входе скрипта переменная окружения (WRKENVVAR) EXTINPPFX (можно изменить ниже),
+---- содержащая имя библиотеки внешнего ввода. Устанавливается посредством конфигурации приложения в
+---- application.gradle installation.environments.byJSON с применением steps.type addenvvar.
+
+  -- Создание временных объектов
+
+BEGIN
+  DECLARE GLOBAL TEMPORARY TABLE SESSION.GZFILES (
+    GZNAME VARCHAR(10) NOT NULL
+  ) WITH REPLACE;
+END;
+
+BEGIN
+
+  -- Глобальные переменные
+
+  DECLARE EXTINPPFX VARCHAR(8) DEFAULT ''; -- Префикс библиотеки внешение ввода (устанавливается предварительно в сис. пер. EXTINPLIB)
+  DECLARE MNM VARCHAR(3) DEFAULT ''; -- Мнемоника среды
+  DECLARE EXTINPLIB VARCHAR(10) DEFAULT ''; -- Имя библиотеки внешение ввода (устанавливается предварительно в сис. пер. EXTINPLIB)
+  DECLARE EXTINPPARM CHAR(10) DEFAULT ''; -- Имя библиотеки для вызова EQXREC
+  DECLARE WSID CHAR(4) DEFAULT ''; -- Имя рабочей станции для применения внешнего ввода
+  DECLARE USID CHAR(4); -- Имя пользователя для применения внешнего ввода
+  DECLARE BRNM CHAR(4); -- Отделение пользователя внешнего ввода
+  DECLARE MESSAGE VARCHAR(512); -- Сообщение
+  DECLARE ALPRX VARCHAR(3) DEFAULT '@@'; --> Префикс для альтернативных имен GYPF и GZ-таблиц в библиотеке применения (может быть изменен только при необходимости)
+
+  -- Общая обработка исключений
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    SET MESSAGE = 'Ошибка поставки конфигурации '||EXTINPLIB;
+    SIGNAL SQLSTATE '38999' SET MESSAGE_TEXT = MESSAGE;
+  END;
+
+  -- Декларация массива требуемых GZ
+
+  INSERT INTO SESSION.GZFILES VALUES
+   #NAME_GZ_FILES#
+  ;
+
+  -- Получение мнемоники среды
+
+  BEGIN
+    SET MNM = (SELECT RIGHT(SYSTEM_SCHEMA_NAME,3) FROM QSYS2.LIBRARY_LIST_INFO WHERE LEFT(SYSTEM_SCHEMA_NAME, 4) = 'KFIL');
+    IF MNM IS NULL THEN -- Окружение должно быть
+      SET MESSAGE = 'Не найдено окружение Equation';
+      SIGNAL SQLSTATE '38999' SET MESSAGE_TEXT = MESSAGE;
+    END IF;
+  END;
+
+  -- Получение имени библиотеки внешнего ввода (значения системной переменной EXTINPPFX + мнемоника среды)
+
+  BEGIN
+    SET EXTINPPFX = (SELECT TRIM(VAR_VALUE) FROM QSYS2.ENV_VARS WHERE VAR_TYPE = 'JOB' AND VAR_NAME = 'EXTINPPFX'); --> По необходимости актуализируйте имя системной переменной для библиотеке внешнего ввода
+    IF EXTINPPFX IS NULL THEN -- Переменная окружения EXTINPPFX должна быть предварительно установлена
+      SIGNAL SQLSTATE VALUE '38999'
+      SET MESSAGE_TEXT = 'Не найдено значение переменной окружения EXTINPPFX';
+    END IF;
+    IF LENGTH(EXTINPPFX) > 7 THEN -- Длина переменной окружения не должна быть больше 7
+      SIGNAL SQLSTATE VALUE '38999'
+      SET MESSAGE_TEXT = 'Длина значения EXTINPPFX > 7';
+    END IF;
+    IF EXTINPPFX = 'QTEMP' THEN -- Использование QTEMP пока запрещено
+      SIGNAL SQLSTATE VALUE '38999'
+      SET MESSAGE_TEXT = 'Использование QTEMP в качестве библиотеки внешнего ввода пока запрещено';
+    END IF;
+    SET EXTINPLIB = TRIM(EXTINPPFX)||MNM;
+  END;
+
+  -- Проверка и подготовка библиотеки-схемы внешнего ввода
+
+  BEGIN
+    DECLARE SQLSTM VARCHAR(1024) DEFAULT '';
+    DECLARE KINP VARCHAR(10) DEFAULT '';
+    DECLARE MESSAGE VARCHAR(512);
+    DECLARE GZNAME CHAR(10) DEFAULT '';
+    DECLARE NOTFOUND INTEGER DEFAULT 0;
+    DECLARE GZFILESC CURSOR FOR SELECT GZNAME FROM SESSION.GZFILES;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+      SET NOTFOUND = 1;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+      SET MESSAGE = 'Ошибка на этапе подготовки библиотеки внешнего ввода '||EXTINPLIB;
+      SIGNAL SQLSTATE '38999' SET MESSAGE_TEXT = MESSAGE;
+    END;
+    SET KINP = 'KINP'||MNM;
+    IF NOT EXISTS(SELECT * FROM SYSIBM.SQLSCHEMAS WHERE TABLE_SCHEM = EXTINPLIB) THEN
+      SET SQLSTM = 'CREATE SCHEMA '||EXTINPLIB;
+      EXECUTE IMMEDIATE SQLSTM;
+    ELSE
+      IF NOT EXISTS(SELECT * FROM QSYS2.JRNINFO WHERE JOURNAL_LIBRARY = EXTINPLIB AND JOURNAL_NAME = 'QSQJRN') THEN
+        SET MESSAGE = 'Библиотека '||EXTINPLIB||' уже существует и ранее не использовалась для patch external input';
+        SIGNAL SQLSTATE '38999' SET MESSAGE_TEXT = MESSAGE;
+      END IF;
+    END IF;
+    IF NOT EXISTS(SELECT * FROM QSYS2.SYSTABLES WHERE TABLE_NAME = 'GYPF' AND TABLE_SCHEMA = EXTINPLIB) THEN
+      CALL QCMDEXC('CRTDUPOBJ OBJ(GYPF) FROMLIB('||KINP||') OBJTYPE(*FILE) TOLIB('||EXTINPLIB||') FILEID(*YES)');
+    ELSE
+      SET SQLSTM = 'DELETE FROM '||EXTINPLIB||'.GYPF';
+      EXECUTE IMMEDIATE SQLSTM;
+    END IF;
+    BEGIN
+      FOR FL AS GYLFC CURSOR FOR
+        SELECT INDEX_NAME GYLF FROM QSYS2.SYSTISTAT WHERE TABLE_SCHEMA = KINP AND TABLE_NAME = 'GYPF'
+        DO
+          IF NOT EXISTS(SELECT * FROM QSYS2.SYSTISTAT WHERE TABLE_SCHEMA = EXTINPLIB AND INDEX_NAME = GYLF) THEN
+            CALL QCMDEXC('CRTDUPOBJ OBJ('||GYLF||') FROMLIB('||KINP
+              ||') OBJTYPE(*FILE) TOLIB('||EXTINPLIB||') FILEID(*YES)');
+          END IF;
+      END FOR;
+    END;
+    SET SQLSTM = 'CREATE OR REPLACE ALIAS QTEMP.'||ALPRX||'GYPF FOR '||EXTINPLIB||'.GYPF';
+    EXECUTE IMMEDIATE SQLSTM;
+    SET NOTFOUND = 0;
+    OPEN GZFILESC;
+    LP1: LOOP
+      FETCH GZFILESC INTO GZNAME;
+      IF NOTFOUND = 1 THEN
+        LEAVE LP1;
+      END IF;
+      IF NOT EXISTS(SELECT * FROM QSYS2.SYSTABLES WHERE TABLE_SCHEMA = EXTINPLIB AND TABLE_NAME = GZNAME) THEN
+        CALL QCMDEXC('CRTDUPOBJ OBJ('||GZNAME||') FROMLIB('||KINP||') OBJTYPE(*FILE) TOLIB('
+          ||EXTINPLIB||') FILEID(*YES)');
+      ELSE
+        SET SQLSTM = 'DELETE FROM '||EXTINPLIB||'.'||GZNAME;
+        EXECUTE IMMEDIATE SQLSTM;
+      END IF;
+      SET SQLSTM = 'CREATE OR REPLACE ALIAS QTEMP.'||ALPRX||GZNAME||' FOR '||EXTINPLIB||'.'||GZNAME;
+      EXECUTE IMMEDIATE SQLSTM;
+    END LOOP LP1;
+    CLOSE GZFILESC;
+  END;
+
+  -- Получение имени рабочей станции, пользователя, бранча для применения внешнего ввода
+
+  BEGIN
+    DECLARE MESSAGE VARCHAR(512);
+    SET USID = (SELECT LEFT(EODPRF.DATA_AREA_VALUE, 4) FROM
+      TABLE(QSYS2.DATA_AREA_INFO(DATA_AREA_NAME => 'EODPRF', DATA_AREA_LIBRARY => '*LIBL')) EODPRF);
+    IF USID IS NULL THEN -- Переменная окружения USID должна быть предварительно установлена
+      SIGNAL SQLSTATE VALUE '38999'
+        SET MESSAGE_TEXT = 'Не найдено значение пользователя для применения внешнего ввода';
+    END IF;
+    SET BRNM = IFNULL( (SELECT OCBRNM FROM OCPF WHERE OCUSID = USID), 'MOCO');
+    CALL ALC_WSID4 ('INP', 10, WSID, DEFAULT, '1');
+    IF WSID = '' THEN
+      SIGNAL SQLSTATE VALUE '38999'
+        SET MESSAGE_TEXT = 'Ошибка получения WSID посредством ALC_WSID4';
+    END IF;
+  END;
+
+  -- Заполнение GZxxx1,
+  BEGIN
+    #INSERT_VALUES_INTO_YPM#
+
+    #INSERT_INTO_GYPF_FOR_YPM#
+  END;
+
+  -- Применение вшешнего ввода
+
+  BEGIN
+    SET EXTINPPARM = EXTINPLIB;
+    CALL EQXREC (EXTINPPARM);
+  END;
+
+  -- Анализ результатов внешнего ввода
+
+  BEGIN
+    DECLARE MESSAGE VARCHAR(512);
+    IF EXISTS(SELECT * FROM @@GYPF WHERE GYREC = 'F') THEN
+      SET MESSAGE = 'Применение внешнего ввода из '||EXTINPLIB
+        ||' завершилось с ошибками. Смотри '||EXTINPLIB||'/GYPF';
+      SIGNAL SQLSTATE VALUE '38999' SET MESSAGE_TEXT = MESSAGE;
+    END IF;
+  END;
+
+  SET MESSAGE = 'Внешний ввод из '||EXTINPLIB||' успешно завершен';
+  SIGNAL SQLSTATE VALUE '01000' SET MESSAGE_TEXT = MESSAGE;
+
+  -- Удаление временных объектов
+  DROP TABLE SESSION.GZFILES;
+
+END
