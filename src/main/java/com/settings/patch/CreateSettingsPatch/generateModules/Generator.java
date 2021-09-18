@@ -3,6 +3,8 @@ package com.settings.patch.CreateSettingsPatch.generateModules;
 
 import com.settings.patch.CreateSettingsPatch.entities.BuildFile;
 import com.settings.patch.CreateSettingsPatch.entities.ReleaseFile;
+import com.settings.patch.CreateSettingsPatch.entities.SqlFile;
+import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import lombok.Getter;
 
 import java.io.*;
@@ -12,16 +14,12 @@ import java.util.zip.ZipOutputStream;
 
 public class Generator {
 
-    // Константы
-    private final String defaultPatchToStaticFiles = "src/main/resources/static/";
-    private final String defaultPatchToTemplatesFiles = "src/main/resources/templates/";
 
-    @Getter
-    private final String defaultPatchToResources = "src/main/resources/";
 
     // entities
     private BuildFile buildFile;
     private ReleaseFile releaseFile;
+    private SqlFile sqlFile;
 
     private String mnemonic;
     private String numberPatch;
@@ -35,13 +33,19 @@ public class Generator {
     @Getter
     private String nameReleaseFile;
     @Getter
+    private String patchForSqlFile;
+    @Getter
+    private String nameSqlFile;
+    @Getter
     private String patchForZipFile;
     @Getter
     private String nameZipFile;
 
 
-    public Generator(String fsd ,String task, String brd, String description, String mnemonic, String numberPatch, int rebuildLevel){
+    public Generator(String fsd , String task, String brd, String description, String mnemonic,
+                     String numberPatch, int rebuildLevel, Set<String> selectedTables){
         this.buildFile = new BuildFile(task);
+        this.sqlFile = new SqlFile(selectedTables);
         this.mnemonic = mnemonic;
         this.numberPatch = numberPatch;
         this.releaseFile = ReleaseFile.builder().description(description).fsd(fsd).task(task).brd(brd).rebuildLevel(rebuildLevel).build();
@@ -50,23 +54,24 @@ public class Generator {
     public void run(){
         generateBuildFile();
         generateReleaseFile();
+        generateSqlFile();
         createZipArchive();
     }
 
     private void generateBuildFile(){
-        String str = getTemplateDataFromFile(defaultPatchToStaticFiles + "TemplateBuildFile.txt");
+        String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateBuildFile.txt");
         this.nameBuildFile = mnemonic + "#" + numberPatch + ".ext.gradle";
-        this.patchForBuildFile = defaultPatchToTemplatesFiles+this.nameBuildFile;
+        this.patchForBuildFile = FileWorker.defaultPatchToTemplatesFiles+this.nameBuildFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#SQL_FILE_NAME#","R"+buildFile.getNumber()+"EXT");
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
         }};
-        generateFinalFile(this.patchForBuildFile,str,replaceData);
+        FileWorker.generateFinalFile(this.patchForBuildFile,str,replaceData);
     }
     private void generateReleaseFile(){
-        String str = getTemplateDataFromFile(defaultPatchToStaticFiles + "TemplateReleaseFile.txt");
+        String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateReleaseFile.txt");
         this.nameReleaseFile = mnemonic + "#" + numberPatch + ".gradle";
-        this.patchForReleaseFile = defaultPatchToTemplatesFiles+this.nameReleaseFile;
+        this.patchForReleaseFile = FileWorker.defaultPatchToTemplatesFiles+this.nameReleaseFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
             put("#PATCH_DESCRIPTION#", releaseFile.getDescription());
@@ -87,14 +92,26 @@ public class Generator {
                 put("#REBUILD_LEVEL#", "");
             }
         }};
-        generateFinalFile(this.patchForReleaseFile,str,replaceData);
+        FileWorker.generateFinalFile(this.patchForReleaseFile,str,replaceData);
+    }
+
+    private void generateSqlFile(){
+        String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateSqlFile.txt");
+        this.nameSqlFile = "R"+buildFile.getNumber()+"EXT.SQL";
+        this.patchForSqlFile =  FileWorker.defaultPatchToTemplatesFiles+this.nameSqlFile;
+        Map<String, String> replaceData = new HashMap<>(){{
+            put("#NAME_GZ_FILES#",sqlFile.getStringWithNamesGzFiles());
+            put("#INSERT_VALUES_INTO_YPM#", sqlFile.getInsertSqlForYPMPF());
+            put("#INSERT_INTO_GYPF_FOR_YPM#", FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_GYPF/TemplateYPMPF.txt"));
+        }};
+        FileWorker.generateFinalFile(this.patchForSqlFile,str,replaceData);
     }
 
     public void createZipArchive(){
         this.nameZipFile = mnemonic + "#" +numberPatch +".zip";
-        this.patchForZipFile = defaultPatchToResources + "ACOV/" + nameZipFile;
-        List<String> patchToFilesInArchive = Arrays.asList(patchForBuildFile,patchForReleaseFile);
-        List<String> nameFilesInArchive = Arrays.asList(nameBuildFile, nameReleaseFile);
+        this.patchForZipFile = FileWorker.defaultPatchToResources + "ACOV/" + nameZipFile;
+        List<String> patchToFilesInArchive = Arrays.asList(patchForBuildFile,patchForReleaseFile, patchForSqlFile);
+        List<String> nameFilesInArchive = Arrays.asList(nameBuildFile, nameReleaseFile, nameSqlFile);
         if(patchToFilesInArchive.size()!=nameFilesInArchive.size()){
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -121,40 +138,4 @@ public class Generator {
             e.printStackTrace();
         }
     }
-
-    private String getTemplateDataFromFile(String pathToTemplateFile){
-        StringBuilder str = new StringBuilder();
-        File f = new File(pathToTemplateFile);
-        try(FileReader fr = new FileReader(f)) {
-            try(BufferedReader br = new BufferedReader(fr)){
-                String tempStr = null;
-                while ((tempStr = br.readLine())!= null){
-                    str.append(tempStr + "\n");
-                }
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return new String(str);
-    }
-    private void generateFinalFile(String pathToNewFile, String data, Map<String, String> paramReplace){
-        for(Map.Entry<String, String> entry : paramReplace.entrySet()){
-            data = data.replace(entry.getKey(), entry.getValue());
-        }
-        File file = new File(pathToNewFile);
-        try {
-            file.createNewFile();
-            try(FileWriter fw = new FileWriter(file, false);) {
-                fw.write(data);
-                fw.flush();
-            }catch (IOException e){
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

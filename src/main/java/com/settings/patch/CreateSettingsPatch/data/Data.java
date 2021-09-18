@@ -1,6 +1,6 @@
 package com.settings.patch.CreateSettingsPatch.data;
 
-import com.settings.patch.CreateSettingsPatch.entities.YPMPF;
+import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 
 import java.util.ArrayList;
 import java.util.List;

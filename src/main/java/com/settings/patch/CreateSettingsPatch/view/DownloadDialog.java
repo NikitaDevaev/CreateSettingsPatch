@@ -22,6 +22,8 @@ public class DownloadDialog {
     @Getter
     private Anchor anchorReleaseFile;
     @Getter
+    private Anchor anchorSqlFile;
+    @Getter
     private Anchor anchorDownloadAll;
 
     private Button buttonDownloadAll;
@@ -31,6 +33,7 @@ public class DownloadDialog {
         this.dialog = new Dialog();
         this.anchorBuildFile = new Anchor(getStreamResource(generator.getNameBuildFile(),generator.getPatchForBuildFile()),generator.getNameBuildFile());
         this.anchorReleaseFile = new Anchor(getStreamResource(generator.getNameReleaseFile(),generator.getPatchForReleaseFile()),generator.getNameReleaseFile());
+        this.anchorSqlFile = new Anchor(getStreamResource(generator.getNameSqlFile(),generator.getPatchForSqlFile()),generator.getNameSqlFile());
 
         // Странное решение...По хорошему переделать бы
         this.anchorDownloadAll = new Anchor(getStreamResource(generator.getNameZipFile(), generator.getPatchForZipFile()),"");
@@ -42,7 +45,7 @@ public class DownloadDialog {
         });
         HorizontalLayout hl = new HorizontalLayout(this.anchorDownloadAll ,this.close);
 
-        VerticalLayout verticalLayout = new VerticalLayout(anchorBuildFile, anchorReleaseFile, hl);
+        VerticalLayout verticalLayout = new VerticalLayout(anchorBuildFile, anchorReleaseFile, anchorSqlFile, hl);
         dialog.add(verticalLayout);
     }
 
