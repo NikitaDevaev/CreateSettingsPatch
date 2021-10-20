@@ -1,6 +1,5 @@
 package com.settings.patch.CreateSettingsPatch.view;
 
-import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import com.settings.patch.CreateSettingsPatch.generateModules.Generator;
 import com.settings.patch.CreateSettingsPatch.view.YpmView.GridViewYpm;
 import com.vaadin.flow.component.accordion.Accordion;
@@ -12,20 +11,13 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Route("")
@@ -40,24 +32,31 @@ public class MainView extends VerticalLayout {
     DownloadDialog downloadDialog;
     private final CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 
+    private AppLayout appLayout = new AppLayout();
+    private Tabs menu = new Tabs();
+    private H1 title = new H1("Патчер");
+
+    private TextField mnemonic = new TextField();
+    Div Prefix = new Div();
+    IntegerField version = new IntegerField();
+
+    private TextField fsd = new TextField("Ссылка на fsd");
+    private TextField task = new TextField("Ссылка на задачу");
+    private TextField brd = new TextField("Ссылка на brd");
+    private TextArea desc = new TextArea("Описание");
+
     public MainView() {
-        AppLayout appLayout = new AppLayout();
 
-
-        Tabs test = new Tabs();
-        H1 title = new H1("Патчер");
         title.getStyle()
                 .set("font-size", "20px")
                 .set("left", "var(--lumo-space-l)")
                 .set("margin", "0")
                 .set("position", "absolute");
-        appLayout.addToNavbar(title, test);
+        appLayout.addToNavbar(title, menu);
         add(appLayout);
         //-------Создание Input полей для заполнения информации о патче----------
-        TextField mnemonic = new TextField();
+
         mnemonic.setLabel("Мнемоника патча");
-        IntegerField version = new IntegerField();
-        Div Prefix = new Div();
         Prefix.setText("#");
         version.setPrefixComponent(Prefix);
         version.setLabel("Версия патча");
@@ -67,13 +66,9 @@ public class MainView extends VerticalLayout {
         Accordion accordion = new Accordion();
 
         VerticalLayout personalInformationLayout = new VerticalLayout();
-        TextField fsd = new TextField("Ссылка на fsd");
         fsd.setWidth("500px");
-        TextField task = new TextField("Ссылка на задачу");
         task.setWidth("500px");
-        TextField brd = new TextField("Ссылка на brd");
         brd.setWidth("500px");
-        TextArea desc = new TextArea("Описание");
         desc.setWidth("500px");
         personalInformationLayout.add(fsd, task,brd, desc);
         accordion.add("Доп. инфо для патча", personalInformationLayout);

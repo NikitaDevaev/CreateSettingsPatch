@@ -13,7 +13,6 @@ public class SqlFile {
 
     public SqlFile(Set<String> selectedTable) {
         this.selectedTable = selectedTable;
-        this.ypmpfList = ypmpfList;
     }
 
     public String getStringWithNamesGzFiles(){
@@ -37,16 +36,18 @@ public class SqlFile {
     public String getInsertSqlForYPMPF(){
         String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_YPMPF/TemplateYPMPF.txt");
         String values = "";
+        int i = 1;
         for(YPMPF ypmpf : ypmpfList){
-            String temp = "(WSID, DEC(DAY(CURRENT_DATE),2,0), DEC(CURRENT_TIME,6,0),  2, '" +
+            String temp = "(WSID, DEC(DAY(CURRENT_DATE),2,0), DEC(CURRENT_TIME,6,0), " + i +", '" +
                     (ypmpf.getMode() == Mode.Удаление ? "B" : "A") + "',\n\t'" +
                      ypmpf.getConditionName() +"', '" + resultSqlString(ypmpf.getDescription()) + "',\n\t'" +
-                    resultSqlString(ypmpf.getCondition() + "', 'Y')");
+                     resultSqlString(ypmpf.getCondition()) + "', 'Y')";
             if(!values.equals("")){
                 values += ",\n\t" + temp;
             }else{
                 values += temp;
             }
+            i++;
         }
         str = str.replace("#INSERT_VALUES#", values);
         return str;

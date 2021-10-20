@@ -1,7 +1,5 @@
 package com.settings.patch.CreateSettingsPatch.generateModules;
 
-import lombok.Getter;
-
 import java.io.*;
 import java.util.Map;
 
@@ -37,7 +35,7 @@ public class FileWorker {
         File file = new File(pathToNewFile);
         try {
             file.createNewFile();
-            try(FileWriter fw = new FileWriter(file, false);) {
+            try(FileWriter fw = new FileWriter(file, false)) {
                 fw.write(data);
                 fw.flush();
             }catch (IOException e){

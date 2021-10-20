@@ -25,15 +25,15 @@ BEGIN
 
   -- Глобальные переменные
 
-  DECLARE EXTINPPFX VARCHAR(8) DEFAULT ''; -- Префикс библиотеки внешение ввода (устанавливается предварительно в сис. пер. EXTINPLIB)
-  DECLARE MNM VARCHAR(3) DEFAULT ''; -- Мнемоника среды
-  DECLARE EXTINPLIB VARCHAR(10) DEFAULT ''; -- Имя библиотеки внешение ввода (устанавливается предварительно в сис. пер. EXTINPLIB)
-  DECLARE EXTINPPARM CHAR(10) DEFAULT ''; -- Имя библиотеки для вызова EQXREC
-  DECLARE WSID CHAR(4) DEFAULT ''; -- Имя рабочей станции для применения внешнего ввода
-  DECLARE USID CHAR(4); -- Имя пользователя для применения внешнего ввода
-  DECLARE BRNM CHAR(4); -- Отделение пользователя внешнего ввода
-  DECLARE MESSAGE VARCHAR(512); -- Сообщение
-  DECLARE ALPRX VARCHAR(3) DEFAULT '@@'; --> Префикс для альтернативных имен GYPF и GZ-таблиц в библиотеке применения (может быть изменен только при необходимости)
+  DECLARE EXTINPPFX VARCHAR(8) DEFAULT ''; -- префикс библиотеки внешение ввода (устанавливается предварительно в сис. пер. EXTINPLIB)
+  DECLARE MNM VARCHAR(3) DEFAULT ''; -- мнемоника среды
+  DECLARE EXTINPLIB VARCHAR(10) DEFAULT ''; -- имя библиотеки внешение ввода (устанавливается предварительно в сис. пер. EXTINPLIB)
+  DECLARE EXTINPPARM CHAR(10) DEFAULT ''; -- имя библиотеки для вызова EQXREC
+  DECLARE WSID CHAR(4) DEFAULT ''; -- имя рабочей станции для применения внешнего ввода
+  DECLARE USID CHAR(4); -- имя пользователя для применения внешнего ввода
+  DECLARE BRNM CHAR(4); -- отделение пользователя внешнего ввода
+  DECLARE MESSAGE VARCHAR(512); -- сообщение
+  DECLARE ALPRX VARCHAR(3) DEFAULT '@@'; --> префикс для альтернативных имен GYPF и GZ-таблиц в библиотеке применения (может быть изменен только при необходимости)
 
   -- Общая обработка исключений
 
