@@ -11,6 +11,9 @@ as400release {
     #FSD_LINK#
     #TASK_LINK#
     #BRD_LINK#
+    #TESTS_LINK#
   }
 }
-#REBUILD_LEVEL#
+
+project.ext.retailDescription = 'Settlement System.'
+project.ext.taskID='#BUMBER_TASK#'

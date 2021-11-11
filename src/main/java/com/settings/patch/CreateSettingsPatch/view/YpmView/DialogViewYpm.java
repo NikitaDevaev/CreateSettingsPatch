@@ -9,6 +9,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -75,7 +77,10 @@ public class DialogViewYpm {
 
         // Анализ действий
         closeButton.addClickListener(e -> dialog.close());
-        saveButton.addClickListener(e -> save());
+        saveButton.addClickListener(e -> {
+            if(valid()){
+                save();
+            }});
         deleteButton.addClickListener(e ->delete());
     }
 
@@ -102,5 +107,29 @@ public class DialogViewYpm {
     public void delete(){
         Data.getList().remove(binder.getBean());
         dialog.close();
+    }
+
+    private boolean valid(){
+        if(conditionName.getValue().trim().equals("")){
+            Notification.show("Не заполнено имя условия").addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+        if(conditionName.getValue().trim().length() < 5){
+            Notification.show("Размер имени условия меньше необходимого").addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+        if(condition.getValue().trim().equals("")){
+            Notification.show("Не заполнено условие").addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+        if(description.getValue().trim().equals("")){
+            Notification.show("Не заполнено описание").addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+        if(mode.isEmpty()){
+            Notification.show("Не выбран мод").addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+        return true;
     }
 }

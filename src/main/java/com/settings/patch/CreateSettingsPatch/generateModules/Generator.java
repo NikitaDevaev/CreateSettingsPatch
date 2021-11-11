@@ -42,13 +42,13 @@ public class Generator {
     private String nameZipFile;
 
 
-    public Generator(String fsd , String task, String brd, String description, String mnemonic,
+    public Generator(String fsd , String task, String brd, String tests, String description, String mnemonic,
                      String numberPatch, int rebuildLevel, Set<String> selectedTables){
         this.buildFile = new BuildFile(task);
         this.sqlFile = new SqlFile(selectedTables);
         this.mnemonic = mnemonic;
         this.numberPatch = numberPatch;
-        this.releaseFile = ReleaseFile.builder().description(description).fsd(fsd).task(task).brd(brd).rebuildLevel(rebuildLevel).build();
+        this.releaseFile = ReleaseFile.builder().description(description).fsd(fsd).task(task).brd(brd).tests(tests).rebuildLevel(rebuildLevel).build();
     }
 
     public void run(){
@@ -76,6 +76,7 @@ public class Generator {
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
             put("#PATCH_DESCRIPTION#", releaseFile.getDescription());
             put("#TASK_LINK#", "task {\t'" + releaseFile.getTask()+"'\t}");
+            put("#TESTS_LINK#", "tests {\t'" + releaseFile.getTests()+"'\t}");
             if(releaseFile.getFsd()==null){
                 put("#FSD_LINK#", "fsd  {\t'" + releaseFile.getTask()+"'\t}");
             }else{
@@ -86,11 +87,7 @@ public class Generator {
             }else{
                 put("#BRD_LINK#", "brd  {\t'" + releaseFile.getBrd()+"'\t}");
             }
-            if(releaseFile.getRebuildLevel() > 0){
-                put("#REBUILD_LEVEL#", "setRebuildDatabaseLevel(" + releaseFile.getRebuildLevel() + ")");
-            }else{
-                put("#REBUILD_LEVEL#", "");
-            }
+            put("#BUMBER_TASK#", buildFile.getNumber());
         }};
         FileWorker.generateFinalFile(this.patchForReleaseFile,str,replaceData);
     }

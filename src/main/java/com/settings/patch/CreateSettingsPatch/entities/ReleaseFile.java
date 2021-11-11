@@ -11,6 +11,7 @@ public class ReleaseFile {
     private String fsd; // http:/...
     private String task; // http:/..
     private String brd; // http:/..
+    private String tests;
     private String description;
     private int rebuildLevel; // example: 3
 
