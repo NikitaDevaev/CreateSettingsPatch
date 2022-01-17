@@ -1,14 +1,11 @@
 package com.settings.patch.CreateSettingsPatch.data;
 
 import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
+import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Data {
-    private static List<YPMPF> list = new ArrayList<>();
-
-    public static List<YPMPF> getList() {
-        return list;
-    }
+    @Getter
+    private static Map<String, ArrayList<YPMPF>> list = new LinkedHashMap<>();
 }

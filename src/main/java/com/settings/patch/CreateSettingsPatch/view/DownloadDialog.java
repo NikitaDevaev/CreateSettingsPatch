@@ -10,8 +10,6 @@ import com.vaadin.flow.server.StreamResource;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class DownloadDialog {
 

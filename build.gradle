@@ -3,10 +3,10 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'com.vaadin' version '0.14.6.0'
 	id 'java'
+	id 'war'
 }
 
-
-version = '1.4.0'
+version = '1'
 
 group = 'com.settings.patch'
 sourceCompatibility = '11'
@@ -23,13 +23,19 @@ dependencyManagement {
 }
 
 dependencies {
-// https://mvnrepository.com/artifact/org.projectlombok/lombok
+    implementation group: 'com.opencsv', name: 'opencsv', version: '5.5.2'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.6.1'
+	implementation group: 'com.vaadin', name: 'vaadin-maven-plugin', version: '22.0.0'
 	compileOnly 'org.projectlombok:lombok:1.18.8'
 	annotationProcessor 'org.projectlombok:lombok:1.18.8'
 	implementation 'com.vaadin:vaadin-spring-boot-starter'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 	}
 }
+
+ vaadin{
+   productionMode = true
+ }
 
 test {
 	useJUnitPlatform()

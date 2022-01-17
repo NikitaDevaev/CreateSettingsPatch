@@ -1,37 +1,49 @@
 package com.settings.patch.CreateSettingsPatch.view;
 
+import com.settings.patch.CreateSettingsPatch.data.Data;
+import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
+import com.settings.patch.CreateSettingsPatch.generateModules.CsvWorker;
+import com.settings.patch.CreateSettingsPatch.generateModules.FileWorker;
 import com.settings.patch.CreateSettingsPatch.generateModules.Generator;
+import com.settings.patch.CreateSettingsPatch.view.YefView.GridViewYef;
 import com.settings.patch.CreateSettingsPatch.view.YpmView.GridViewYpm;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 import lombok.Getter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.ArrayList;
 
 
 @Route("")
-@Theme(variant = Lumo.DARK)
 public class MainView extends VerticalLayout {
     private Generator generator;
     // View классы
-    GridViewYpm gridViewYpm = new GridViewYpm();
+    private GridViewYef gridViewYef;
+    private GridViewYpm gridViewYpm;
     // Кнопки
     private final Button createPatch;
-    DownloadDialog downloadDialog;
+    private CsvWorker csvWorker = new CsvWorker();
+    private DownloadDialog downloadDialog;
     private final CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 
     private AppLayout appLayout = new AppLayout();
@@ -49,12 +61,19 @@ public class MainView extends VerticalLayout {
     private TextField tests = new TextField("Ссылка на тесты");
     private TextArea desc = new TextArea("Описание");
 
-    private Button user = new Button("",VaadinIcon.USER.create());
-    public MainView() {
+    private Button user = new Button("Login out");
+    public MainView() throws NullPointerException{
+        if(!Data.getList().containsKey(getProfile())){
+            Data.getList().put(getProfile(), new ArrayList<YPMPF>());
+        }
+        this.gridViewYef = new GridViewYef(getProfile());
+        this.gridViewYpm = new GridViewYpm(getProfile());
+        Anchor anchor = new Anchor("/Patcher/login ", "");
+        anchor.add(user);
         this.createPatch = new Button("Сгенерировать патч", VaadinIcon.DOWNLOAD.create());
         user.getStyle().set("border-radius","10px");
         createPatch.getStyle().set("border-radius","10px");
-        HorizontalLayout buttonLayout = new HorizontalLayout(createPatch, user);
+        HorizontalLayout buttonLayout = new HorizontalLayout(createPatch, anchor);
         buttonLayout.getStyle().set("flex-wrap", "wrap").set("position", "absolute").set("right", "var(--lumo-space-l)");
         buttonLayout.setJustifyContentMode(JustifyContentMode.END);
         title.getStyle()
@@ -66,7 +85,6 @@ public class MainView extends VerticalLayout {
         appLayout.addToNavbar(title, menu, buttonLayout);
         add(appLayout);
         //-------Создание Input полей для заполнения информации о патче----------
-
         mnemonic.setLabel("Мнемоника патча");
         Prefix.setText("#");
         version.setPrefixComponent(Prefix);
@@ -97,10 +115,29 @@ public class MainView extends VerticalLayout {
         add(checkboxGroup);
         //--------------------------------------------------------------------------
         //----------------- Таблицы ---------------------------------------
+
+        Tab ypmpfTable = new Tab("YPMPF");
+        Tab yefpfTable = new Tab("YEFPF");
+        Tabs tabs = new Tabs(ypmpfTable, yefpfTable);
+        add(tabs);
+        tabs.addAttachListener(event -> {
+            if(tabs.getSelectedIndex() == 0){
+                gridViewYpm.getNewSettingYpm().setVisible(false);
+                gridViewYpm.getGridYpm().setVisible(false);
+            }
+        });
+
+
         add(gridViewYpm.getNewSettingYpm(), gridViewYpm.getGridYpm());
+
         //-----------------------------------------------------------------
         // Обработка
+        user.addClickListener(e->{
+
+            SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
+        });
         createPatch.addClickListener(e -> {
+
             // Переделать бы конструктор на фабричный метод
             if(valid()) {
                 this.generator = new Generator(fsd.getValue(), task.getValue(),
@@ -120,11 +157,14 @@ public class MainView extends VerticalLayout {
                 gridViewYpm.getGridYpm().setVisible(true);
             }
         });
+    }
 
+    private String getProfile(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getName();
     }
 
     private boolean valid(){
-        System.out.println(task.getValue());
       if(task.getValue().trim().equals("") && !task.getValue().contains("ROSS")){
           Notification.show("Не корректно заполнена сслыка на задачу").addThemeVariants(NotificationVariant.LUMO_ERROR);
           return false;

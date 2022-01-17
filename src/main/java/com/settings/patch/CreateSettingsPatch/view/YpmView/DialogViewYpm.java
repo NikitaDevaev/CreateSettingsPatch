@@ -23,7 +23,6 @@ import java.util.EnumSet;
 
 public class DialogViewYpm {
 
-    private YPMPF ypmpf;
     private GridViewYpm gridViewYpm;
     private Dialog dialog;
     // Заголовок
@@ -80,8 +79,12 @@ public class DialogViewYpm {
         saveButton.addClickListener(e -> {
             if(valid()){
                 save();
+                gridViewYpm.getGridYpm().getDataProvider().refreshAll();
             }});
-        deleteButton.addClickListener(e ->delete());
+        deleteButton.addClickListener(e ->{
+            delete();
+            gridViewYpm.getGridYpm().getDataProvider().refreshAll();
+        });
     }
 
     public Dialog getDialog() {
@@ -94,18 +97,19 @@ public class DialogViewYpm {
     }
 
     public void save(){
-        final int it = Data.getList().indexOf(binder.getBean());
+        System.out.println(gridViewYpm.getProfile());
+        final int it = Data.getList().get(gridViewYpm.getProfile()).indexOf(binder.getBean());
         if(it == -1){
-            Data.getList().add(binder.getBean());
+            Data.getList().get(gridViewYpm.getProfile()).add(binder.getBean());
         }else{
-            Data.getList().set(it, binder.getBean());
+            Data.getList().get(gridViewYpm.getProfile()).set(it, binder.getBean());
         }
         dialog.close();
 
     }
 
     public void delete(){
-        Data.getList().remove(binder.getBean());
+        Data.getList().get(gridViewYpm.getProfile()).remove(binder.getBean());
         dialog.close();
     }
 

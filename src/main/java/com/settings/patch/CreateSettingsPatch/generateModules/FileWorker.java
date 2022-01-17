@@ -1,14 +1,35 @@
 package com.settings.patch.CreateSettingsPatch.generateModules;
 
+
 import java.io.*;
 import java.util.Map;
 
-public class FileWorker {
 
+
+public class FileWorker {
     // Константы
-    public static final String defaultPatchToStaticFiles = "src/main/resources/static/";
-    public static final String defaultPatchToTemplatesFiles = "src/main/resources/templates/";
-    public static final String defaultPatchToResources = "src/main/resources/";
+    public static final String defaultPatchToStaticFiles = "/home/tomcat/tmp/static/";
+    public static final String defaultPath = "/home/tomcat/tmp/";
+
+
+
+    public static void createDir(String nameDirForProfile){
+        File mkdir = new File(nameDirForProfile);
+        if (!mkdir.exists()){
+            mkdir.mkdirs();
+        }
+    }
+
+    public static boolean deleteDirectory(File directoryToBeDeleted) {
+
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
 
     public static String getTemplateDataFromFile(String pathToTemplateFile){
         StringBuilder str = new StringBuilder();

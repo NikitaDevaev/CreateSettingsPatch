@@ -4,8 +4,9 @@ package com.settings.patch.CreateSettingsPatch.generateModules;
 import com.settings.patch.CreateSettingsPatch.entities.BuildFile;
 import com.settings.patch.CreateSettingsPatch.entities.ReleaseFile;
 import com.settings.patch.CreateSettingsPatch.entities.SqlFile;
-import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import lombok.Getter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.*;
 import java.util.*;
@@ -41,6 +42,10 @@ public class Generator {
     @Getter
     private String nameZipFile;
 
+    private String getProfile(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getName();
+    }
 
     public Generator(String fsd , String task, String brd, String tests, String description, String mnemonic,
                      String numberPatch, int rebuildLevel, Set<String> selectedTables){
@@ -52,6 +57,8 @@ public class Generator {
     }
 
     public void run(){
+        FileWorker.deleteDirectory(new File(FileWorker.defaultPath +getProfile()));
+        FileWorker.createDir(FileWorker.defaultPath + getProfile());
         generateBuildFile();
         generateReleaseFile();
         generateSqlFile();
@@ -59,9 +66,9 @@ public class Generator {
     }
 
     private void generateBuildFile(){
-        String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateBuildFile.txt");
+        String str = FileWorker.getTemplateDataFromFile( FileWorker.defaultPatchToStaticFiles + "TemplateBuildFile.txt");
         this.nameBuildFile = mnemonic + "#" + numberPatch + ".ext.gradle";
-        this.patchForBuildFile = FileWorker.defaultPatchToTemplatesFiles+this.nameBuildFile;
+        this.patchForBuildFile = FileWorker.defaultPath + getProfile() +"/"+this.nameBuildFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#SQL_FILE_NAME#","R"+buildFile.getNumber()+"EXT");
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
@@ -71,21 +78,22 @@ public class Generator {
     private void generateReleaseFile(){
         String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateReleaseFile.txt");
         this.nameReleaseFile = mnemonic + "#" + numberPatch + ".gradle";
-        this.patchForReleaseFile = FileWorker.defaultPatchToTemplatesFiles+this.nameReleaseFile;
+        this.patchForReleaseFile =FileWorker.defaultPath + getProfile() +"/"+this.nameReleaseFile;
         Map<String, String> replaceData = new HashMap<>(){{
+            put("#RELEASE_VERSION#",numberPatch);
             put("#PACKAGE_NAME#","ROSS"+buildFile.getNumber());
             put("#PATCH_DESCRIPTION#", releaseFile.getDescription());
-            put("#TASK_LINK#", "task {\t'" + releaseFile.getTask()+"'\t}");
-            put("#TESTS_LINK#", "tests {\t'" + releaseFile.getTests()+"'\t}");
+            put("#TASK_LINK#", "task {\tadd '" + releaseFile.getTask()+"'\t}");
+            put("#TESTS_LINK#", "tests {\tadd '" + releaseFile.getTests()+"'\t}");
             if(releaseFile.getFsd()==null){
-                put("#FSD_LINK#", "fsd  {\t'" + releaseFile.getTask()+"'\t}");
+                put("#FSD_LINK#", "fsd  {\tadd '" + releaseFile.getTask()+"'\t}");
             }else{
-                put("#FSD_LINK#", "fsd  {\t'" + releaseFile.getFsd()+"'\t}");
+                put("#FSD_LINK#", "fsd  {\tadd '" + releaseFile.getFsd()+"'\t}");
             }
             if(releaseFile.getBrd()==null){
                 put("#BRD_LINK#", "");
             }else{
-                put("#BRD_LINK#", "brd  {\t'" + releaseFile.getBrd()+"'\t}");
+                put("#BRD_LINK#", "brd  {\tadd '" + releaseFile.getBrd()+"'\t}");
             }
             put("#BUMBER_TASK#", buildFile.getNumber());
         }};
@@ -95,10 +103,10 @@ public class Generator {
     private void generateSqlFile(){
         String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateSqlFile.txt");
         this.nameSqlFile = "R"+buildFile.getNumber()+"EXT.SQL";
-        this.patchForSqlFile =  FileWorker.defaultPatchToTemplatesFiles+this.nameSqlFile;
+        this.patchForSqlFile = FileWorker.defaultPath + getProfile() +"/"+this.nameSqlFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#NAME_GZ_FILES#",sqlFile.getStringWithNamesGzFiles());
-            put("#INSERT_VALUES_INTO_YPM#", sqlFile.getInsertSqlForYPMPF());
+            put("#INSERT_VALUES_INTO_YPM#", sqlFile.getInsertSqlForYPMPF(getProfile()));
             put("#INSERT_INTO_GYPF_FOR_YPM#", FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_GYPF/TemplateYPMPF.txt"));
         }};
         FileWorker.generateFinalFile(this.patchForSqlFile,str,replaceData);
@@ -106,7 +114,7 @@ public class Generator {
 
     public void createZipArchive(){
         this.nameZipFile = mnemonic + "#" +numberPatch +".zip";
-        this.patchForZipFile = FileWorker.defaultPatchToResources + "ACOV/" + nameZipFile;
+        this.patchForZipFile = FileWorker.defaultPath + getProfile() + "/" + nameZipFile;
         List<String> patchToFilesInArchive = Arrays.asList(patchForBuildFile,patchForReleaseFile, patchForSqlFile);
         List<String> nameFilesInArchive = Arrays.asList(nameBuildFile, nameReleaseFile, nameSqlFile);
         if(patchToFilesInArchive.size()!=nameFilesInArchive.size()){

@@ -4,16 +4,15 @@ import com.settings.patch.CreateSettingsPatch.data.Data;
 import com.settings.patch.CreateSettingsPatch.entities.data.YPMPF;
 import com.settings.patch.CreateSettingsPatch.generateModules.FileWorker;
 
-import java.util.List;
 import java.util.Set;
 
 public class SqlFile {
     private Set<String> selectedTable;
-    private List<YPMPF> ypmpfList = Data.getList();
 
     public SqlFile(Set<String> selectedTable) {
         this.selectedTable = selectedTable;
     }
+
 
     public String getStringWithNamesGzFiles(){
         String result= "";
@@ -33,11 +32,11 @@ public class SqlFile {
         return result;
     }
 
-    public String getInsertSqlForYPMPF(){
+    public String getInsertSqlForYPMPF(String profile){
         String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_YPMPF/TemplateYPMPF.txt");
         String values = "";
         int i = 1;
-        for(YPMPF ypmpf : ypmpfList){
+        for(YPMPF ypmpf : Data.getList().get(profile)){
             String temp = "(WSID, DEC(DAY(CURRENT_DATE),2,0), DEC(CURRENT_TIME,6,0), " + i +", '" +
                     (ypmpf.getMode() == Mode.Удаление ? "B" : "A") + "',\n\t'" +
                      ypmpf.getConditionName() +"', '" + resultSqlString(ypmpf.getDescription()) + "',\n\t'" +

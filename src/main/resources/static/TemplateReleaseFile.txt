@@ -1,5 +1,6 @@
 as400release {
   installPhase = 'DOK'
+  as400version = "#RELEASE_VERSION#"
   regMVL {
     mode = 'SUSP'  // SUSP or NORM, SUSP by default
   }
@@ -17,3 +18,5 @@ as400release {
 
 project.ext.retailDescription = 'Settlement System.'
 project.ext.taskID='#BUMBER_TASK#'
+
+apply from: 'src/assembly/config.gradle'
