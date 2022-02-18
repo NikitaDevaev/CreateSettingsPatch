@@ -30,6 +30,5 @@ import '@vaadin/vaadin-text-field/theme/lumo/vaadin-email-field.js';
 import '@vaadin/vaadin-text-field/theme/lumo/vaadin-password-field.js';
 import '@vaadin/vaadin-time-picker/theme/lumo/vaadin-time-picker.js';
 import '@vaadin/vaadin-upload/src/vaadin-upload-file.js';
-import '@vaadin/vaadin-upload/theme/lumo/vaadin-upload.js';
 import '@vaadin/flow-frontend/ironListConnector.js';
 import '@vaadin/flow-frontend/selectConnector.js';

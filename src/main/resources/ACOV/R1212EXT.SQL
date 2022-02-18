@@ -46,7 +46,7 @@ BEGIN
   -- Декларация массива требуемых GZ
 
   INSERT INTO SESSION.GZFILES VALUES
-   #NAME_GZ_FILES#
+   (GZYPM1)
   ;
 
   -- Получение мнемоники среды
@@ -162,13 +162,33 @@ BEGIN
 
   -- Заполнение GZxxx1,
   BEGIN
-    #INSERT_VALUES_INTO_YPM#
-    #INSERT_VALUES_INTO_YEF#
-    #INSERT_VALUES_INTO_YA5#
+        INSERT INTO QTEMP.@@GZYPM1
+    (
+    GZWSID, GZDIM, GZTIM, GZSEQ, GZIMG, GZCCN, GZDSC, GZCND, GZTWO
+    )
+    values
+    (WSID, DEC(DAY(CURRENT_DATE),2,0), DEC(CURRENT_TIME,6,0), 1, 'A',
+	'PDAAA', 'еуые',
+	'test', 'Y');
 
-    #INSERT_INTO_GYPF_FOR_YPM#
-    #INSERT_INTO_GYPF_FOR_YEF#
-    #INSERT_INTO_GYPF_FOR_YA5#
+    
+
+        INSERT INTO QTEMP.@@GYPF --> Необходимо заполнить журнал внешнего ввода
+      (GYWSID, GYUSID, GYDIM, GYTIM, GYSEQ, GYFRO, GYJTT, GYBRNM, GYPRN)
+      SELECT GZWSID, USID, GZDIM, GZTIM, GZSEQ
+      , 'YPMF' --> Укажите program root транзакции
+      , CASE --> Укажите тип транзакции(если запись не найдена, то добавляем, для этого нужен GZIMG = A)
+      -- A - Add, M - Maintain, D - Delete(для Delete нужен GZIMG = B)
+          WHEN YPMCCN IS NULL
+          THEN 'A'
+          ELSE 'M'
+        END
+      , BRNM
+      , 'N'
+      FROM QTEMP.@@GZYPM1
+      LEFT JOIN YPMPF ON (YPMCCN) = (GZCCN); --Ключ поиск
+
+    
   END;
 
   -- Применение вшешнего ввода

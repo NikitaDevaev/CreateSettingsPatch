@@ -37,6 +37,7 @@ import '@vaadin/vaadin-text-field/theme/lumo/vaadin-integer-field.js';
 import '@vaadin/vaadin-text-field/theme/lumo/vaadin-number-field.js';
 import '@vaadin/vaadin-text-field/theme/lumo/vaadin-text-area.js';
 import '@vaadin/vaadin-text-field/theme/lumo/vaadin-text-field.js';
+import '@vaadin/vaadin-upload/theme/lumo/vaadin-upload.js';
 import '@vaadin/flow-frontend/comboBoxConnector.js';
 import '@vaadin/flow-frontend/contextMenuConnector.js';
 import '@vaadin/flow-frontend/dndConnector.js';

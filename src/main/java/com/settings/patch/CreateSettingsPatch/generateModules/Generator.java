@@ -14,9 +14,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class Generator {
-
-
-
     // entities
     private BuildFile buildFile;
     private ReleaseFile releaseFile;
@@ -100,14 +97,36 @@ public class Generator {
         FileWorker.generateFinalFile(this.patchForReleaseFile,str,replaceData);
     }
 
+    // TODO: переделать после изменения getInsertSqlForYEFPF
     private void generateSqlFile(){
         String str = FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "TemplateSqlFile.txt");
+        sqlFile.getInsertSqlForYEFPF(getProfile());
         this.nameSqlFile = "R"+buildFile.getNumber()+"EXT.SQL";
         this.patchForSqlFile = FileWorker.defaultPath + getProfile() +"/"+this.nameSqlFile;
         Map<String, String> replaceData = new HashMap<>(){{
             put("#NAME_GZ_FILES#",sqlFile.getStringWithNamesGzFiles());
-            put("#INSERT_VALUES_INTO_YPM#", sqlFile.getInsertSqlForYPMPF(getProfile()));
-            put("#INSERT_INTO_GYPF_FOR_YPM#", FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_GYPF/TemplateYPMPF.txt"));
+            if(sqlFile.getSelectedTable().contains("YPMPF")){
+                put("#INSERT_VALUES_INTO_YPM#", sqlFile.getInsertSqlForYPMPF(getProfile()));
+                put("#INSERT_INTO_GYPF_FOR_YPM#", FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_GYPF/TemplateYPMPF.txt"));
+            }else{
+                put("#INSERT_VALUES_INTO_YPM#", "");
+                put("#INSERT_INTO_GYPF_FOR_YPM#", "");
+            }
+            if(sqlFile.getSelectedTable().contains("YEFPF")){
+                put("#INSERT_VALUES_INTO_YEF#", sqlFile.getInsertSqlForYEFPF(getProfile()));
+                put("#INSERT_INTO_GYPF_FOR_YEF#", FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_GYPF/TemplateYEFPF.txt"));
+            }else{
+                put("#INSERT_VALUES_INTO_YEF#", "");
+                put("#INSERT_INTO_GYPF_FOR_YEF#", "");
+            }
+            if(sqlFile.getSelectedTable().contains("YA5PF")){
+                put("#INSERT_VALUES_INTO_YA5#", sqlFile.getInsertSqlForYEFPF(getProfile()));
+                put("#INSERT_INTO_GYPF_FOR_YA5#", FileWorker.getTemplateDataFromFile(FileWorker.defaultPatchToStaticFiles + "INSERT_GYPF/TemplateYA5PF.txt"));
+            }else{
+                put("#INSERT_VALUES_INTO_YA5#", "");
+                put("#INSERT_INTO_GYPF_FOR_YA5#", "");
+            }
+
         }};
         FileWorker.generateFinalFile(this.patchForSqlFile,str,replaceData);
     }

@@ -1,0 +1,14 @@
+    INSERT INTO QTEMP.@@GYPF --> Необходимо заполнить журнал внешнего ввода
+      (GYWSID, GYUSID, GYDIM, GYTIM, GYSEQ, GYFRO, GYJTT, GYBRNM, GYPRN)
+      SELECT GZWSID, USID, GZDIM, GZTIM, GZSEQ
+      , 'YEFF' --> Укажите program root транзакции
+      , CASE --> Укажите тип транзакции(если запись не найдена, то добавляем, для этого нужен GZIMG = A)
+      -- A - Add, M - Maintain, D - Delete(для Delete нужен GZIMG = B)
+          WHEN YEFMTN IS NULL
+          THEN 'A'
+          ELSE 'M'
+        END
+      , BRNM
+      , 'N'
+      FROM QTEMP.@@GZYEF1
+      LEFT JOIN YEFPF ON (YEFMTN) = (GZMTN); --Ключ поиск

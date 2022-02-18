@@ -1,16 +1,16 @@
 package com.settings.patch.CreateSettingsPatch.generateModules;
 
-
 import java.io.*;
 import java.util.Map;
 
-
-
 public class FileWorker {
-    // Константы
-    public static final String defaultPatchToStaticFiles = "/home/tomcat/tmp/static/";
-    public static final String defaultPath = "/home/tomcat/tmp/";
+    // Константы для работы под tomcat на сервере Альфы
+    //public static final String defaultPatchToStaticFiles = "/home/tomcat/tmp/static/";
+    //public static final String defaultPath = "/home/tomcat/tmp/";
 
+    // Константы для локала (debug)
+    public static final String defaultPatchToStaticFiles = "src/main/resources/static/";
+    public static final String defaultPath = "src/main/resources/";
 
 
     public static void createDir(String nameDirForProfile){

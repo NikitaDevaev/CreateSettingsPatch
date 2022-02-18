@@ -5,8 +5,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 
 @Route("/admin")
@@ -16,7 +14,7 @@ public class AdminView extends VerticalLayout {
     public AdminView(){
         add(headline, clearButton);
         clearButton.addClickListener(e->{
-            Data.getList().clear();
+            Data.getYPMlist().clear();
         });
     }
 }

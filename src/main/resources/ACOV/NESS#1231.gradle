@@ -1,0 +1,22 @@
+as400release {
+  installPhase = 'DOK'
+  as400version = "1231"
+  regMVL {
+    mode = 'SUSP'  // SUSP or NORM, SUSP by default
+  }
+  packages {
+    addPackages "ROSS1212"
+  }
+  releaseNotes {
+    addText = "ROSS-1212"
+    fsd  {	add 'ROSS-1212'	}
+    task {	add 'ROSS-1212'	}
+    brd  {	add 'ROSS-1212'	}
+    tests {	add 'ROSS-1212'	}
+  }
+}
+
+project.ext.retailDescription = 'Settlement System.'
+project.ext.taskID='1212'
+
+apply from: 'src/assembly/config.gradle'

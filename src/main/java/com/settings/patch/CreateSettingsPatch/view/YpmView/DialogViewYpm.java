@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.EnumSet;
@@ -24,6 +25,7 @@ import java.util.EnumSet;
 public class DialogViewYpm {
 
     private GridViewYpm gridViewYpm;
+    @Getter
     private Dialog dialog;
     // Заголовок
     private H2 headline = new H2("Добавление новой настроки");
@@ -87,10 +89,6 @@ public class DialogViewYpm {
         });
     }
 
-    public Dialog getDialog() {
-        return this.dialog;
-    }
-
     public void createDialogView(YPMPF ypmpf){
         binder.bindInstanceFields(ypmpf);
         binder.setBean(ypmpf);
@@ -98,18 +96,17 @@ public class DialogViewYpm {
 
     public void save(){
         System.out.println(gridViewYpm.getProfile());
-        final int it = Data.getList().get(gridViewYpm.getProfile()).indexOf(binder.getBean());
+        final int it = Data.getYPMlist().get(gridViewYpm.getProfile()).indexOf(binder.getBean());
         if(it == -1){
-            Data.getList().get(gridViewYpm.getProfile()).add(binder.getBean());
+            Data.getYPMlist().get(gridViewYpm.getProfile()).add(binder.getBean());
         }else{
-            Data.getList().get(gridViewYpm.getProfile()).set(it, binder.getBean());
+            Data.getYPMlist().get(gridViewYpm.getProfile()).set(it, binder.getBean());
         }
         dialog.close();
-
     }
 
     public void delete(){
-        Data.getList().get(gridViewYpm.getProfile()).remove(binder.getBean());
+        Data.getYPMlist().get(gridViewYpm.getProfile()).remove(binder.getBean());
         dialog.close();
     }
 
